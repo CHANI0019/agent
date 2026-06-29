@@ -431,66 +431,82 @@
 
         /* Print styles */
         @media print {
-            body {
-                background: white;
-                color: black;
+            @page {
+                size: 210mm 3000mm;
+                margin: 0;
+            }
+            body, html {
+                background: #ffffff !important;
+                color: #111827 !important;
                 display: block;
-                height: auto;
-                overflow: visible;
+                height: auto !important;
+                overflow: visible !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            body {
+                padding: 15mm !important;
+                box-sizing: border-box !important;
+            }
+            /* Force all text elements to dark color in print mode */
+            body *, p, span, h1, h2, h3, h4, h5, h6, li, a, td, th, div, code, pre {
+                color: #111827 !important;
+                text-shadow: none !important;
             }
             .sidebar {
                 display: none !important;
             }
             .content-area {
-                padding: 0;
-                overflow: visible;
+                padding: 0 !important;
+                overflow: visible !important;
+                height: auto !important;
+                position: static !important;
+                width: 100% !important;
             }
-            .flowchart-container {
-                background: white;
-                color: black;
-                box-shadow: none;
-                border: 1px solid #ccc;
-                page-break-after: always;
+            .flowchart-container, .agent-card, .math-card, .feature-card {
+                background: #f9fafb !important;
+                border: 1px solid #d1d5db !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                margin-bottom: 20px !important;
+                padding: 24px !important;
+                border-radius: 8px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            /* Reset CSS Grid to stacked blocks for robust printing */
+            .agent-card-body, .feature-grid {
+                display: block !important;
+                width: 100% !important;
+            }
+            .info-block, .feature-card {
+                width: 100% !important;
+                margin-bottom: 16px !important;
+                display: block !important;
+            }
+            .formula-box, .math-display {
+                width: 100% !important;
+                display: block !important;
+                background: #f3f4f6 !important;
+                border: 1px solid #e5e7eb !important;
+                color: #111827 !important;
+                padding: 12px !important;
+                border-radius: 6px !important;
+                box-sizing: border-box !important;
+                grid-column: auto !important;
             }
             .flow-node, .agent-node-mini {
-                background: white !important;
-                color: black !important;
-                border: 1px solid #333 !important;
-            }
-            .agent-card {
-                background: white !important;
-                color: black !important;
-                border: 1px solid #ccc !important;
-                page-break-inside: avoid;
-                margin-bottom: 20px;
+                background: #f3f4f6 !important;
+                border: 1px solid #9ca3af !important;
                 box-shadow: none !important;
-            }
-            .agent-title-group h3, .agent-title-group p {
-                color: black !important;
+                color: #111827 !important;
             }
             .info-label {
-                color: #555 !important;
-            }
-            .formula-box {
-                background: #f8fafc !important;
-                color: black !important;
-                border: 1px solid #ddd !important;
-            }
-            .math-card {
-                background: white !important;
-                color: black !important;
-                border: 1px solid #ccc !important;
-                page-break-inside: avoid;
-            }
-            .math-display {
-                background: #f8fafc !important;
-                color: black !important;
-            }
-            .feature-card {
-                background: white !important;
-                color: black !important;
-                border: 1px solid #ccc !important;
-                page-break-inside: avoid;
+                color: #b45309 !important; /* Elegant dark gold accent */
+                font-weight: 700 !important;
+                border-bottom: 1px solid #e5e7eb !important;
+                margin-bottom: 6px !important;
+                padding-bottom: 2px !important;
             }
         }
     </style>
@@ -510,6 +526,7 @@
             <li class="nav-item"><a href="#valuation-math" class="nav-link" onclick="activateLink(this)">⚖️ 하이브리드 결합 모델</a></li>
             <li class="nav-item"><a href="#guardrails" class="nav-link" onclick="activateLink(this)">🔒 무결성 및 성찰 시스템</a></li>
             <li class="nav-item"><a href="#self-evolution" class="nav-link" onclick="activateLink(this)">🧬 자가 진화 아키텍처</a></li>
+            <li class="nav-item"><a href="#ai-intelligence" class="nav-link" onclick="activateLink(this)">🤖 AI 기반 의사결정</a></li>
         </ul>
     </div>
 
@@ -933,6 +950,32 @@
                     <h3><span>💻</span> 자율 분석 기능 확장</h3>
                     <ul>
                         <li>매크로 지표나 수급 패턴에 특이 국면이 발생하여 기존 알고리즘 분석 능력이 부족할 시, AI 가상 에이전트가 분석용 Python 코드(<code>skill_proposal</code>)를 실시간 코딩하여 자체 라이브러리에 적재 및 런타임 가동하는 자가 유지보수 구조를 지닙니다.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: AI Intelligence -->
+        <div id="ai-intelligence" class="section">
+            <h2 class="section-title">AI 기반 의사결정 및 딥러닝 모델 (AI Intelligence)</h2>
+            <p class="section-intro">
+                <strong>AI Intelligence</strong>: 딥러닝 모델(LSTM, Transformer-based Hybrid)이 전략의 핵심 의사결정 수행. 
+                <strong>다중 모달 데이터 결합(Multi-modal Fusion)</strong>을 통해 시장을 입체적으로 분석합니다.
+            </p>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3><span>🤖</span> Hybrid Trading Model (멀티-헤드 딥러닝)</h3>
+                    <ul>
+                        <li><strong>가격 시계열 (LSTM)</strong>: 과거 20일간의 OHLCV 및 기술적 지표(MA, RSI, MACD, BB)의 상관관계를 분석하여 미래 가격 확률 분포를 예측.</li>
+                        <li><strong>뉴스 감성 (Transformer)</strong>: 최신 뉴스 기사를 BERT/RoBERTa 임베딩으로 벡터화하고, Transformer Encoder를 통해 시장의 심리적 변동성을 정량적 수치로 변환.</li>
+                        <li><strong>기본적 지표 (MLP)</strong>: 해당 종목의 영업이익, ROE, PBR 및 RIM 기반 저평가 지수를 고차원 특징 벡터로 변환하여 모델 전반의 안정성 강화.</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3><span>🐋</span> Project Leviathan (주도주 포착 모델)</h3>
+                    <ul>
+                        <li><strong>추세 강화 분석</strong>: 5일간의 단기 흐름을 극대화하여 현재 시장의 '주도 테마' 및 '상승 관성'이 발생한 종목을 실시간 스코어링.</li>
+                        <li><strong>국면 분할 (Regime Detection)</strong>: MLP를 통해 현재가 하락 구간인지, 초기 상승(Early-Stage)인지, 과열(Overheated) 상태인지를 자동 분류하여 진입 시점 결정.</li>
                     </ul>
                 </div>
             </div>
