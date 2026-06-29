@@ -1,7 +1,7 @@
 {
-  "name": "다나리 AI 멀티 에이전트 시스템 명세서",
-  "short_name": "다나리 AI 명세서",
-  "description": "다나리 AI 가치평가 시스템 및 에이전트 상세 명세서 PWA",
+  "name": "다나리 AI 멀티 에이전트 시스템",
+  "short_name": "다나리 AI 시스템",
+  "description": "다나리 AI 가치평가 시스템 및 에이전트 상세",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0b0f19",
