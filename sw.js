@@ -1,9 +1,11 @@
-const CACHE_NAME = 'danari-agent-pwa-v1';
+const CACHE_NAME = 'danari-agent-pwa-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './icon.svg'
+  './icon.svg',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // Install Event
@@ -36,13 +38,11 @@ self.addEventListener('activate', (event) => {
 
 // Fetch Event (Network-first with Cache fallback)
 self.addEventListener('fetch', (event) => {
-  // Avoid caching non-HTTP requests (like chrome-extension://, etc.)
   if (!event.request.url.startsWith('http')) return;
 
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
-        // Cache successful requests dynamically
         if (networkResponse.status === 200) {
           return caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, networkResponse.clone());
@@ -52,12 +52,10 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(() => {
-        // Fallback to cache if network fails
         return caches.match(event.request).then((cachedResponse) => {
           if (cachedResponse) {
             return cachedResponse;
           }
-          // If the index.html itself fails, return cached entry
           if (event.request.mode === 'navigate') {
             return caches.match('./index.html');
           }
