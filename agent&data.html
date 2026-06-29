@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>다나리 AI 멀티 에이전트 시스템 명세서</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- MathJax for high-res math rendering -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0b0f19;
+            --bg-secondary: #161e2e;
+            --bg-card: #1f2937;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-gold: #fbbf24;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --border-color: #374151;
+            --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.15);
+            --shadow-gold-glow: 0 0 25px rgba(251, 191, 38, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar navigation */
+        .sidebar {
+            width: 320px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            height: 100%;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .sidebar-header p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 20px 12px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .nav-item {
+            margin-bottom: 6px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 10px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-link.active {
+            color: var(--bg-primary);
+            background-color: var(--accent-gold);
+            font-weight: 700;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 40px 60px;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .section {
+            margin-bottom: 60px;
+            scroll-margin-top: 40px;
+        }
+
+        h2.section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            border-left: 5px solid var(--accent-cyan);
+            padding-left: 16px;
+            margin-bottom: 30px;
+        }
+
+        p.section-intro {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        /* Large Visual Flowchart */
+        .flowchart-container {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-glow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .flow-step-row {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            width: 100%;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+
+        .flow-node {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px 24px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: center;
+            min-width: 160px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .flow-node:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+
+        .flow-node.highlight-cyan {
+            border-color: var(--accent-cyan);
+            background-color: rgba(6, 182, 212, 0.05);
+        }
+
+        .flow-node.highlight-blue {
+            border-color: var(--accent-blue);
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .flow-node.highlight-gold {
+            border-color: var(--accent-gold);
+            background-color: rgba(251, 191, 36, 0.05);
+            box-shadow: var(--shadow-gold-glow);
+            font-size: 1.15rem;
+            padding: 24px 36px;
+            font-weight: 700;
+        }
+
+        .flow-arrow {
+            font-size: 2rem;
+            color: var(--text-secondary);
+            margin: 12px 0;
+            font-family: monospace;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            animation: pulse-arrow 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-arrow {
+            0%, 100% { opacity: 0.5; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(3px); }
+        }
+
+        .agent-grid-mini {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px dashed var(--border-color);
+        }
+
+        .agent-node-mini {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 14px;
+            font-size: 0.85rem;
+            text-align: center;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .agent-node-mini span {
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+
+        /* Detailed Agent Cards Grid */
+        .agent-details-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 24px;
+        }
+
+        .agent-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .agent-card:hover {
+            border-color: var(--accent-blue);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .agent-card-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+        }
+
+        .agent-icon {
+            font-size: 2.2rem;
+        }
+
+        .agent-title-group h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .agent-title-group p {
+            font-size: 0.8rem;
+            color: var(--accent-cyan);
+            font-family: 'Fira Code', monospace;
+            text-transform: uppercase;
+        }
+
+        .agent-card-body {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .agent-card-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info-block {
+            margin-bottom: 16px;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .info-content {
+            font-size: 0.925rem;
+            color: var(--text-primary);
+        }
+
+        .info-content ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-content li {
+            position: relative;
+            padding-left: 16px;
+            margin-bottom: 4px;
+        }
+
+        .info-content li::before {
+            content: "•";
+            color: var(--accent-cyan);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .formula-box {
+            grid-column: span 2;
+            background-color: rgba(0, 0, 0, 0.25);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            margin-top: 10px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+        }
+
+        @media (max-width: 1024px) {
+            .formula-box {
+                grid-column: span 1;
+            }
+        }
+
+        /* Valuation Math Section */
+        .math-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .math-display {
+            padding: 24px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow-x: auto;
+            text-align: center;
+        }
+
+        /* Guardrails & Self-Evolution sections */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .feature-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-card ul {
+            list-style: none;
+        }
+
+        .feature-card li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .feature-card li::before {
+            content: "✓";
+            color: var(--accent-green);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        /* Print styles */
+        @media print {
+            @page {
+                size: 210mm 3000mm;
+                margin: 0;
+            }
+            body, html {
+                background: #ffffff !important;
+                color: #111827 !important;
+                display: block;
+                height: auto !important;
+                overflow: visible !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            body {
+                padding: 15mm !important;
+                box-sizing: border-box !important;
+            }
+            /* Force all text elements to dark color in print mode */
+            body *, p, span, h1, h2, h3, h4, h5, h6, li, a, td, th, div, code, pre {
+                color: #111827 !important;
+                text-shadow: none !important;
+            }
+            .sidebar {
+                display: none !important;
+            }
+            .content-area {
+                padding: 0 !important;
+                overflow: visible !important;
+                height: auto !important;
+                position: static !important;
+                width: 100% !important;
+            }
+            .flowchart-container, .agent-card, .math-card, .feature-card {
+                background: #f9fafb !important;
+                border: 1px solid #d1d5db !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                margin-bottom: 20px !important;
+                padding: 24px !important;
+                border-radius: 8px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            /* Reset CSS Grid to stacked blocks for robust printing */
+            .agent-card-body, .feature-grid {
+                display: block !important;
+                width: 100% !important;
+            }
+            .info-block, .feature-card {
+                width: 100% !important;
+                margin-bottom: 16px !important;
+                display: block !important;
+            }
+            .formula-box, .math-display {
+                width: 100% !important;
+                display: block !important;
+                background: #f3f4f6 !important;
+                border: 1px solid #e5e7eb !important;
+                color: #111827 !important;
+                padding: 12px !important;
+                border-radius: 6px !important;
+                box-sizing: border-box !important;
+                grid-column: auto !important;
+            }
+            .flow-node, .agent-node-mini {
+                background: #f3f4f6 !important;
+                border: 1px solid #9ca3af !important;
+                box-shadow: none !important;
+                color: #111827 !important;
+            }
+            .info-label {
+                color: #b45309 !important; /* Elegant dark gold accent */
+                font-weight: 700 !important;
+                border-bottom: 1px solid #e5e7eb !important;
+                margin-bottom: 6px !important;
+                padding-bottom: 2px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>다나리 AI 명세서</h1>
+            <p>Agent & Data Framework</p>
+        </div>
+        <ul class="nav-list">
+            <li class="nav-item"><a href="#overview" class="nav-link active" onclick="activateLink(this)">🛠️ 시스템 개요</a></li>
+            <li class="nav-item"><a href="#flowchart" class="nav-link" onclick="activateLink(this)">📈 가치평가 아키텍처</a></li>
+            <li class="nav-item"><a href="#agent-specs" class="nav-link" onclick="activateLink(this)">👥 9대 분석 에이전트</a></li>
+            <li class="nav-item"><a href="#valuation-math" class="nav-link" onclick="activateLink(this)">⚖️ 하이브리드 결합 모델</a></li>
+            <li class="nav-item"><a href="#guardrails" class="nav-link" onclick="activateLink(this)">🔒 무결성 및 성찰 시스템</a></li>
+            <li class="nav-item"><a href="#self-evolution" class="nav-link" onclick="activateLink(this)">🧬 자가 진화 아키텍처</a></li>
+            <li class="nav-item"><a href="#ai-intelligence" class="nav-link" onclick="activateLink(this)">🤖 AI 기반 의사결정</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content-area">
+
+        <!-- Section: Overview -->
+        <div id="overview" class="section">
+            <h2 class="section-title">시스템 개요 (System Overview)</h2>
+            <p class="section-intro">
+                다나리 AI는 기존 정량적 퀀트 모델의 한계(정성적 리스크 오독)와 일반 거대언어모델(LLM)의 한계(수치적 환각)를 동시에 극복하기 위해 
+                <strong>금융공학과 9인 AI 에이전트의 합의 메커니즘을 융합한 하이브리드 가치평가 아키텍처</strong>를 채택하고 있습니다.
+            </p>
+        </div>
+
+        <!-- Section: Flowchart -->
+        <div id="flowchart" class="section">
+            <h2 class="section-title">가치평가 아키텍처 흐름도 (Valuation Architecture Flow)</h2>
+            <p class="section-intro">데이터 수집부터 정제, 에이전트 분석, S-RIM 하이브리드 결합, 무결성 성찰을 거쳐 최종 리포트가 완성되는 과정입니다.</p>
+            
+            <div class="flowchart-container">
+                <!-- Step 1: Raw Data -->
+                <div class="flow-step-row">
+                    <div class="flow-node highlight-cyan">재무제표DB</div>
+                    <div class="flow-node highlight-cyan">주식 데이터 API</div>
+                    <div class="flow-node highlight-cyan">DART 실시간 공시</div>
+                    <div class="flow-node highlight-cyan">실시간 뉴스 피드</div>
+                    <div class="flow-node highlight-cyan">실시간 시세 피드</div>
+                    <div class="flow-node highlight-cyan">매크로/원자재 지표</div>
+                </div>
+                <div class="flow-arrow">▼</div>
+
+                <!-- Step 2: Prep -->
+                <div class="flow-step-row">
+                    <div class="flow-node highlight-blue" style="min-width: 400px; font-size: 1.05rem;">데이터 전처리 및 기초 산출 연산 (Data Prep & Pre-calculation)</div>
+                </div>
+                <div class="flow-arrow">▼</div>
+
+                <!-- Step 3: 9-Agent Consensus Engine -->
+                <div class="flow-step-row" style="margin: 15px 0;">
+                    <div class="agent-grid-mini">
+                        <div class="agent-node-mini"><span>📊</span>재무 분석</div>
+                        <div class="agent-node-mini"><span>📈</span>기술적 지표</div>
+                        <div class="agent-node-mini"><span>📰</span>뉴스 & 공시</div>
+                        <div class="agent-node-mini"><span>👥</span>수급 동향</div>
+                        <div class="agent-node-mini"><span>🌍</span>거시경제</div>
+                        <div class="agent-node-mini"><span>🚀</span>성장성 평가</div>
+                        <div class="agent-node-mini"><span>🛡️</span>안정성/리스크</div>
+                        <div class="agent-node-mini"><span>👑</span>시장 위상</div>
+                        <div class="agent-node-mini"><span>🔮</span>미래 실적/가치</div>
+                    </div>
+                </div>
+                <div class="flow-arrow">▼</div>
+
+                <!-- Step 4: Multiplier -->
+                <div class="flow-step-row">
+                    <div class="flow-node highlight-blue" style="min-width: 450px;">합의 점수(0-100) 산출 및 정성적 가중 멀티플러 계산</div>
+                </div>
+                <div class="flow-arrow">▼</div>
+
+                <!-- Step 5: Hybrid Integration -->
+                <div class="flow-step-row">
+                    <div class="flow-node highlight-blue" style="min-width: 500px;">금융공학(S-RIM) 적정가 × 정성적 멀티플러 융합 가치평가</div>
+                </div>
+                <div class="flow-arrow">▼</div>
+
+                <!-- Step 6: Guardrails -->
+                <div class="flow-step-row">
+                    <div class="flow-node highlight-blue" style="min-width: 550px;">논리적 일관성 검증 및 텍스트-수치 자아 성찰(Self-Reflection) 가드레일</div>
+                </div>
+                <div class="flow-arrow">▼</div>
+
+                <!-- Step 7: Final -->
+                <div class="flow-step-row">
+                    <div class="flow-node highlight-gold">최종 VIP 실시간 분석 리포트 및 적정 목표 주가 출력</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Agent Specifications -->
+        <div id="agent-specs" class="section">
+            <h2 class="section-title">9대 전문 분석 에이전트 상세 명세 (The 9-Agent Specs)</h2>
+            <p class="section-intro">각 에이전트는 해당 도메인의 전문 지식을 모델링하여 0~100점의 정량적 평가 점수와 정성적 근거 리포트를 작성합니다.</p>
+            
+            <div class="agent-details-grid">
+                
+                <!-- Agent 1 -->
+                <div class="agent-card">
+                    <div class="agent-card-header">
+                        <span class="agent-icon">📊</span>
+                        <div class="agent-title-group">
+                            <h3>재무 분석 에이전트 (Financial Agent)</h3>
+                            <p>financial_agent</p>
+                        </div>
+                    </div>
+                    <div class="agent-card-body">
+                        <div class="info-block">
+                            <div class="info-label">수집 및 입력 데이터</div>
+                            <div class="info-content">제무제표DB 및 금융사 API에서 추출한 3개년 재무제표(매출, 영업이익, 당기순이익, 자산, 부채, 자본), 핵심 투자 지표(ROE, PBR, PER, EV/EBITDA, 부채비율, 유보율).</div>
+                        </div>
+                        <div class="info-block">
+                            <div class="info-label">데이터 가공 및 엔지니어링</div>
+                            <div class="info-content">자기자본이익률(ROE)과 기업 순자산가치(BPS)의 다년도 추세를 선형 회귀 및 시계열 가중치로 가공. 부채비율과 유보율의 비율 분석을 통해 장기 재무 건전성 계수 도출.</div>
+                        </div>
+                        <div class="info-block" style="grid-column: span 2;">
+                            <div class="info-label">추론 및 의사결정 방식 (Reasoning)</div>
+                            <div class="info-content">S-RIM(Residual Income Model, 잔여이익모델)을 기초로 주주 요구수익률 대비 기업이 창출하고 있는 초과 이익의 가치를 잔여이익 할인 모형에 대입하여 산출합니다. 단순 PER 배수 비교를 배제하고, 자본의 효율적 증식 속도(ROE)를 기반으로 내재가치를 추론합니다.</div>
+                        </div>
+                        <div class="formula-box">
+                            <strong>점수 산출 공식:</strong><br>
+                            Financial Score = min(100, max(0, (ROE * 3) + (부채비율 < 100% ? 50 : 30))) (ROE 미존재 시 50점 폴백)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agent 2 -->
+                <div class="agent-card">
+                    <div class="agent-card-header">
+                        <span class="agent-icon">📈</span>
+                        <div class="agent-title-group">
+                            <h3>기술적 지표 에이전트 (Technical Agent)</h3>
+                            <p>technical_agent</p>
+                        </div>
+                    </div>
+                    <div class="agent-card-body">
+                        <div class="info-block">
+                            <div class="info-label">수집 및 입력 데이터</div>
+                            <div class="info-content">일봉/주봉 시세 데이터, 거래량, 주요 보조 지표(RSI, MACD, Bollinger Bands, Moving Averages 5/20/60/120일선, ATR).</div>
+                        </div>
+                        <div class="info-block">
+                            <div class="info-label">데이터 가공 및 엔지니어링</div>
+                            <div class="info-content">이동평균선의 배열 상태(정배열/역배열) 분석 및 현재가와 장단기 이평선의 이격도 계산. RSI 및 MACD 시그널의 골든/데드크로스 타임스탬프 추출.</div>
+                        </div>
+                        <div class="info-block" style="grid-column: span 2;">
+                            <div class="info-label">추론 및 의사결정 방식 (Reasoning)</div>
+                            <div class="info-content">현재 가격이 대량 거래를 동반한 지지선 지지 또는 저항선 돌파 국면에 있는지 판단합니다. 추세 추종(Trend Following) 기법과 평균 회귀(Mean Reversion) 이론을 결합하여, 단기 매수세 과열(Overbought) 또는 매도세 침체(Oversold) 국면에서의 반등 확률을 추론합니다.</div>
+                        </div>
+                        <div class="formula-box">
+                            <strong>점수 산출 공식:</strong><br>
+                            기본 점수로 RSI 지수를 바인딩한 후, 완벽한 정배열 상승 패턴(Perfect Bullish) 감지 시 +20점 할증, 하락 돌파 감지 시 감점 부여.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agent 3 -->
+                <div class="agent-card">
+                    <div class="agent-card-header">
+                        <span class="agent-icon">📰</span>
+                        <div class="agent-title-group">
+                            <h3>뉴스 및 공시 분석 에이전트 (News & Disclosures Agent)</h3>
+                            <p>news_disclosures_agent</p>
+                        </div>
+                    </div>
+                    <div class="agent-card-body">
+                        <div class="info-block">
+                            <div class="info-label">수집 및 입력 데이터</div>
+                            <div class="info-content">네이버 뉴스 API 실시간 검색 결과(최신 20~50개사 타이틀 및 요약), DART 실시간 공시 목록 및 요약 정보.</div>
+                        </div>
+                        <div class="info-block">
+                            <div class="info-label">데이터 가공 및 엔지니어링</div>
+                            <div class="info-content">텍스트 원문에서 기업의 펀더멘털에 직접적 타격을 주는 핵심 부정어 키워드(횡령, 배임, 감사 의견거절, 상장폐지 우려 등) 검출 필터 가동. 뉴스 제목에 대한 감성 분석(Sentiment Analysis)을 통한 긍정/부정 비율 계량화.</div>
+                        </div>
+                        <div class="info-block" style="grid-column: span 2;">
+                            <div class="info-label">추론 및 의사결정 방식 (Reasoning)</div>
+                            <div class="info-content">비정형 텍스트 정보의 이면에 숨겨진 내부 통제 리스크와 시장의 기대감을 정성적으로 파악합니다. 주가에 선반영되지 않은 잠재적 리스크나 호재(대규모 수주 공시, 핵심 특허 취득)의 연속성을 추론하여 투자 심리를 계량화합니다.</div>
+                        </div>
+                        <div class="formula-box">
+                            <strong>점수 산출 공식:</strong><br>
+                            뉴스 및 공시 감성 점수(News Sentiment Index)를 0~100점 척도로 환산하여 반영.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agent 4 -->
+                <div class="agent-card">
+                    <div class="agent-card-header">
+                        <span class="agent-icon">👥</span>
+                        <div class="agent-title-group">
+                            <h3>수급 분석 에이전트 (Supply & Demand Agent)</h3>
+                            <p>supply_demand_agent</p>
+                        </div>
+                    </div>
+                    <div class="agent-card-body">
+                        <div class="info-block">
+                            <div class="info-label">수집 및 입력 데이터</div>
+                            <div class="info-content">투자주체별 순매수 동향(개인, 외국인, 기관계, 연기금, 사모펀드 누적 5일/20일 데이터), 거래대금 회전율.</div>
+                        </div>
+                        <div class="info-block">
+                            <div class="info-label">데이터 가공 및 엔지니어링</div>
+                            <div class="info-content">단순 순매수량 거래 데이터를 주식 수 대비 비율로 환산하고, 기관 및 외국인의 누적 매집 강도를 지수화.</div>
+                        </div>
+                        <div class="info-block" style="grid-column: span 2;">
+                            <div class="info-label">추론 및 의사결정 방식 (Reasoning)</div>
+                            <div class="info-content">시장의 주도 세력(스마트 머니)인 외국인과 기관의 매집 패턴을 분석하여 '기관계 매집 국면', '외인 이탈 국면' 등을 정의합니다. 개인 투자자의 과도한 추격 매수세 유입 여부를 추적해 수급의 질적 안정성을 평가합니다.</div>
+                        </div>
+                        <div class="formula-box">
+                            <strong>점수 산출 공식:</strong><br>
+                            Supply Score = 50 + (외인/기관 동반 매수(Buying) ? +10 : -10) (세부 주체별 거래 대금 가중치 반영)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agent 5 -->
+                <div class="agent-card">
+                    <div class="agent-card-header">
+                        <span class="agent-icon">🌍</span>
+                        <div class="agent-title-group">
+                            <h3>거시경제 인텔리전스 에이전트 (Macro Agent)</h3>
+                            <p>macro_intelligence_agent</p>
+                        </div>
+                    </div>
+                    <div class="agent-card-body">
+                        <div class="info-block">
+                            <div class="info-label">수집 및 입력 데이터</div>
+                            <div class="info-content">미국/한국 기준금리, CPI(소비자물가상승률), 달러 환율(KRW/USD), 국제 유가(WTI), 구리..등 원자재 가격, VIX(공포지수), 국채 금리 스프레드.</div>
+                        </div>
+                        <div class="info-block">
+                            <div class="info-label">데이터 가공 및 엔지니어링</div>
+                            <div class="info-content">거시 지표의 변화율을 측정하고, 각 업종별 민감도(예: 항공/화학-유가 민감도, 수출기업-환율 민감도) 가중치 테이블과 매핑.</div>
+                        </div>
+                        <div class="info-block" style="grid-column: span 2;">
+                            <div class="info-label">추론 및 의사결정 방식 (Reasoning)</div>
+                            <div class="info-content">현재 매크로 경제 주기(확장, 둔화, 수축, 회복)를 정의하고, 현재의 고금리/고물가 기조가 해당 기업의 자본 조달 비용(WACC) 및 영업이익률(OPM)에 미치는 압박 수준을 추론합니다.</div>
+                        </div>
+                        <div class="formula-box">
+                            <strong>점수 산출 공식:</strong><br>
+                            매크로 국면 확장기(Expansion) 감지 시 60점 이상, 수축기 및 금리 급상승기 감지 시 40점 이하의 조정을 거칩니다.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agent 6 -->
+                <div class="agent-card">
+                    <div class="agent-card-header">
+                        <span class="agent-icon">🚀</span>
+                        <div class="agent-title-group">
+                            <h3>성장성 평가 에이전트 (Growth Agent)</h3>
+                            <p>growth_evaluation_agent</p>
+                        </div>
+                    </div>
+                    <div class="agent-card-body">
+                        <div class="info-block">
+                            <div class="info-label">수집 및 입력 데이터</div>
+                            <div class="info-content">다년도 매출액 성장률(Revenue Growth), 영업이익 성장률(OP Growth), 제품별 매출 비중(Sales Mix), 신사업 공시.</div>
+                        </div>
+                        <div class="info-block">
+                            <div class="info-label">데이터 가공 및 엔지니어링</div>
+                            <div class="info-content">매출 구성 비율(Sales Mix) 데이터와 Supabase의 미래 핵심 테마 테이블(theme_weights)을 실시간으로 조인하여 가중 융합 가치(Synergy Bonus) 계산.</div>
+                        </div>
+                        <div class="info-block" style="grid-column: span 2;">
+                            <div class="info-label">추론 및 의사결정 방식 (Reasoning)</div>
+                            <div class="info-content">단순 과거 실적 성장뿐 아니라, 기업이 영위하는 비즈니스 포트폴리오가 시대적 혁신 테마(예: AI, HBM, 전고체, ADC 바이오 등)에 얼마나 정밀하게 정렬되어 있는지를 파악하여 미래 성장 탄력성을 추론합니다.</div>
+                        </div>
+                        <div class="formula-box">
+                            <strong>점수 산출 공식:</strong><br>
+                            Growth Score = min(100, Synergy Bonus * 50) (매출 구성 시너지가 높을수록 가산)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agent 7 -->
+                <div class="agent-card">
+                    <div class="agent-card-header">
+                        <span class="agent-icon">🛡️</span>
+                        <div class="agent-title-group">
+                            <h3>안정성 및 리스크 에이전트 (Stability Agent)</h3>
+                            <p>stability_risk_agent</p>
+                        </div>
+                    </div>
+                    <div class="agent-card-body">
+                        <div class="info-block">
+                            <div class="info-label">수집 및 입력 데이터</div>
+                            <div class="info-content">감사보고서 내 자본잠식률, 현금흐름표(영업/투자/재무 활동 현금흐름), 기말의 현금 및 현금성 자산, 유동 부채.</div>
+                        </div>
+                        <div class="info-block">
+                            <div class="info-label">데이터 가공 및 엔지니어링</div>
+                            <div class="info-content"><strong>Dynamic Runway Simulator</strong> 작동: 기업의 최근 1개년 분기별 현금 소모 속도(Cash Burn Rate)를 연산하여 현재 보유 현금으로 버틸 수 있는 '현금 소진 월수(Runway Months)' 도출.</div>
+                        </div>
+                        <div class="info-block" style="grid-column: span 2;">
+                            <div class="info-label">추론 및 의사결정 방식 (Reasoning)</div>
+                            <div class="info-content">Runway Months가 6개월 이하이거나 자본잠식이 진행 중인 경우, 심각한 유동성 위기 및 청산 리스크를 진단합니다. 영업현금흐름이 부(-)의 수치이고 재무활동으로만 연명하는 한계기업(좀비기업) 여부를 감지해 냅니다.</div>
+                        </div>
+                        <div class="formula-box">
+                            <strong>점수 산출 공식:</strong><br>
+                            치명적 리스크 상태(Critical Risk)일 경우 10점 고정, 우량 자산 보유 및 낮은 부채비율 만족 시 최대 80~100점 부여.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agent 8 -->
+                <div class="agent-card">
+                    <div class="agent-card-header">
+                        <span class="agent-icon">👑</span>
+                        <div class="agent-title-group">
+                            <h3>시장 위상 및 테마 대장 에이전트 (Market Leader)</h3>
+                            <p>market_leader_agent</p>
+                        </div>
+                    </div>
+                    <div class="agent-card-body">
+                        <div class="info-block">
+                            <div class="info-label">수집 및 입력 데이터</div>
+                            <div class="info-content">기업 시가총액, 섹터 내 시가총액 순위, 테마 내 주가 상관계수, 시장 점유율 지표.</div>
+                        </div>
+                        <div class="info-block">
+                            <div class="info-label">데이터 가공 및 엔지니어링</div>
+                            <div class="info-content">시가총액 규모에 따라 대형주(Mega Cap), 중형주(Mid Cap), 소형주(Small Cap)로 분류하고, 업종 내 주가 주도 비율인덱스를 계산.</div>
+                        </div>
+                        <div class="info-block" style="grid-column: span 2;">
+                            <div class="info-label">추론 및 의사결정 방식 (Reasoning)</div>
+                            <div class="info-content">특정 섹터의 상승 흐름 발생 시 가격 탄력성과 변동성을 기초로 해당 종목이 '대장주(Leader)'로 작용하는지, '후발주(Follower)'로 작용하는지 파악합니다. 독과점적 지위나 브랜드 해자(Moat)를 지니고 있어 업종 내 가격 결정권이 있는지 추론합니다.</div>
+                        </div>
+                        <div class="formula-box">
+                            <strong>점수 산출 공식:</strong><br>
+                            시너지 보너스가 1.1배를 상회하거나, 메가캡 우량주 기준을 만족할 경우 70점 이상의 기본 점수 확보.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agent 9 -->
+                <div class="agent-card">
+                    <div class="agent-card-header">
+                        <span class="agent-icon">🔮</span>
+                        <div class="agent-title-group">
+                            <h3>미래 실적 및 가치 전망 에이전트 (Future Agent)</h3>
+                            <p>future_projection_agent</p>
+                        </div>
+                    </div>
+                    <div class="agent-card-body">
+                        <div class="info-block">
+                            <div class="info-label">수집 및 입력 데이터</div>
+                            <div class="info-content">5개년 매출 및 영업이익 전망 시뮬레이션 데이터, 추정 EPS, 추정 BPS, 연도별 예상 생존 확률.</div>
+                        </div>
+                        <div class="info-block">
+                            <div class="info-label">데이터 가공 및 엔지니어링</div>
+                            <div class="info-content">향후 5개년 재무 예측 경로와 S-RIM 적정 가치 경로를 수학적으로 동기화. 정규식 엔진을 활용해 리포트 내의 모든 5개년 수치 표현을 최종 계산값과 1원 단위까지 일치시킴.</div>
+                        </div>
+                        <div class="info-block" style="grid-column: span 2;">
+                            <div class="info-label">추론 및 의사결정 방식 (Reasoning)</div>
+                            <div class="info-content">시간 경과에 따른 실적 개선 가능성과 이에 상응하는 적정 주가 경로를 도출합니다. 매년 누적되는 부도 위험(생존 확률 감소)을 미래 주가 평가액에 반영하여, 장기 전망의 실현 가능성을 확률적으로 할인하여 합리적인 적정가 밴드를 추론합니다.</div>
+                        </div>
+                        <div class="formula-box">
+                            <strong>점수 산출 공식:</strong><br>
+                            5개년 적정 주가 등급(S~F)과 3년 후 예상 상승 여력(Upside)을 기반으로 점수를 계산 (예: F등급 지속 시 15점 내외).
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Section: Valuation Math -->
+        <div id="valuation-math" class="section">
+            <h2 class="section-title">하이브리드 밸류에이션 결합 메커니즘</h2>
+            <p class="section-intro">다나리 AI 플랫폼의 핵심은 정밀 금융공학 가치평가(S-RIM)와 정성적 다중 에이전트 평가 스코어의 하이브리드 융합 연산에 있습니다.</p>
+            
+            <div class="math-card">
+                <h3>1. 에이전트 합산 평균 점수 (Average Consensus Score)</h3>
+                <p>9대 독립 에이전트의 평가 결과인 개별 점수를 고르게 평균하여 종합 합의 점수를 도출합니다.</p>
+                <div class="math-display">
+                    $$AvgAgentScore = \frac{\sum_{i=1}^{9} AgentScore_i}{9.0}$$
+                </div>
+            </div>
+
+            <div class="math-card">
+                <h3>2. 에이전트 가중 멀티플러 (Agent Multiplier)</h3>
+                <p>평균 점수가 기본 임계값(50점)을 상회하는 경우 성장 프리미엄을 곱하고, 하회하는 경우 징벌적 청산 가치 감점을 곱하는 듀얼 스케일링 함수를 적용합니다.</p>
+                <div class="math-display">
+                    $$Multiplier = \begin{cases} 
+                    1.0 + \frac{AvgAgentScore - 50}{100.0} & \text{if } AvgAgentScore \ge 50 \quad (\text{최대 1.5배 할증}) \\
+                    \frac{AvgAgentScore}{50.0} & \text{if } AvgAgentScore < 50 \quad (\text{최소 0.0배 할인})
+                    \end{cases}$$
+                </div>
+            </div>
+
+            <div class="math-card">
+                <h3>3. 최종 AI 합의가격 (Target Price) 산출</h3>
+                <p>재무제표 기준 내재 가치(Base S-RIM)에 업종 섹터 프리미엄, 미래 테마 시너지 보너스, 그리고 앞서 구한 에이전트 가중 멀티플러를 곱해 최종 Target Price를 도출합니다.</p>
+                <div class="math-display">
+                    $$\text{Final Target Price} = \text{Base S-RIM Value} \times \text{Sector Premium} \times \text{Theme Bonus} \times \text{Agent Multiplier}$$
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 15px;">
+                    ※ 이 결합 구조는 재무 펀더멘털이 아무리 양호하더라도 리스크 에이전트나 뉴스 에이전트가 경고(점수 폭락)를 보내면 목표가에 대규모 하향 할인이 자동 집행되는 강력한 리스크 제어 아키텍처를 의미합니다.
+                </p>
+            </div>
+        </div>
+
+        <!-- Section: Guardrails -->
+        <div id="guardrails" class="section">
+            <h2 class="section-title">데이터 무결성 및 자아 성찰 (Self-Reflection) 가드레일</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3><span>🔍</span> 1단계: 초안 작성 및 무오류 검증</h3>
+                    <ul>
+                        <li>9인의 독립 전문 에이전트들이 각자 가공된 원본 팩트 수치를 기준으로 상세 리포트 텍스트 초안을 병렬 작성합니다.</li>
+                        <li>단순히 "좋다/나쁘다"가 아닌, 데이터에 근거한 구체적인 지표(예: PER 12.5배, RSI 28.4)가 선제 기술되는 구조입니다.</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3><span>🛡️</span> 2단계: 크로스 비평 및 자율 교정</h3>
+                    <ul>
+                        <li>AI 비평가 인프라가 텍스트 리포트 원문 내에 쓰인 단어(예: "급락 돌파", "골든크로스")와 실제 로우 데이터의 수치적 진위 여부를 2차 크로스 체크합니다.</li>
+                        <li>본문 텍스트 내에서 '상장폐지', '감사의견 거절', '횡령' 등 치명적 위협 단어가 감지되면, 공식 등급을 즉시 <strong>'중립 (보수적 접근)'</strong>으로 강제 격하시킵니다.</li>
+                        <li>정규식 기반 텍스트 보정기(<code>_replace_price_in_text</code>)가 텍스트에 들어있는 5개년 예상 주가 수치를 실제 하이브리드 연산 2차 보정 테이블 수치와 1원 단위까지 강제 동기화하여 수치 불일치 환각(Hallucination)을 원천 방어합니다.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Self-Evolution -->
+        <div id="self-evolution" class="section">
+            <h2 class="section-title">자가 진화 및 동적 데이터 파이프라인 (Self-Evolution)</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3><span>🧬</span> 테마 및 기업 알파 갱신</h3>
+                    <ul>
+                        <li>뉴스 및 DART 공시에서 시장의 신사업(예: 바이오 신물질, 초전도체 등)이 부각되면, DB의 <code>theme_weights</code> 테이블에 신규 테마 가중치를 자동 편입합니다.</li>
+                        <li>특허 취득, FDA 임상 완료 등 마일스톤 달성 정보 발생 시 <code>company_alpha</code> 스코어 조정을 실시간 자동 반영합니다.</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3><span>💻</span> 자율 분석 기능 확장</h3>
+                    <ul>
+                        <li>매크로 지표나 수급 패턴에 특이 국면이 발생하여 기존 알고리즘 분석 능력이 부족할 시, AI 가상 에이전트가 분석용 Python 코드(<code>skill_proposal</code>)를 실시간 코딩하여 자체 라이브러리에 적재 및 런타임 가동하는 자가 유지보수 구조를 지닙니다.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: AI Intelligence -->
+        <div id="ai-intelligence" class="section">
+            <h2 class="section-title">AI 기반 의사결정 및 딥러닝 모델 (AI Intelligence)</h2>
+            <p class="section-intro">
+                <strong>AI Intelligence</strong>: 딥러닝 모델(LSTM, Transformer-based Hybrid)이 전략의 핵심 의사결정 수행. 
+                <strong>다중 모달 데이터 결합(Multi-modal Fusion)</strong>을 통해 시장을 입체적으로 분석합니다.
+            </p>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3><span>🤖</span> Hybrid Trading Model (멀티-헤드 딥러닝)</h3>
+                    <ul>
+                        <li><strong>가격 시계열 (LSTM)</strong>: 과거 20일간의 OHLCV 및 기술적 지표(MA, RSI, MACD, BB)의 상관관계를 분석하여 미래 가격 확률 분포를 예측.</li>
+                        <li><strong>뉴스 감성 (Transformer)</strong>: 최신 뉴스 기사를 BERT/RoBERTa 임베딩으로 벡터화하고, Transformer Encoder를 통해 시장의 심리적 변동성을 정량적 수치로 변환.</li>
+                        <li><strong>기본적 지표 (MLP)</strong>: 해당 종목의 영업이익, ROE, PBR 및 RIM 기반 저평가 지수를 고차원 특징 벡터로 변환하여 모델 전반의 안정성 강화.</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3><span>🐋</span> Project Leviathan (주도주 포착 모델)</h3>
+                    <ul>
+                        <li><strong>추세 강화 분석</strong>: 5일간의 단기 흐름을 극대화하여 현재 시장의 '주도 테마' 및 '상승 관성'이 발생한 종목을 실시간 스코어링.</li>
+                        <li><strong>국면 분할 (Regime Detection)</strong>: MLP를 통해 현재가 하락 구간인지, 초기 상승(Early-Stage)인지, 과열(Overheated) 상태인지를 자동 분류하여 진입 시점 결정.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Active link switching on click
+        function activateLink(element) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+
+        // Active link tracking on scroll
+        const sections = document.querySelectorAll('.section');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const contentArea = document.querySelector('.content-area');
+
+        contentArea.addEventListener('scroll', () => {
+            let currentSectionId = '';
+            const scrollPos = contentArea.scrollTop + 100; // Offset for detection
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.offsetHeight;
+                if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
+                    currentSectionId = section.getAttribute('id');
+                }
+            });
+
+            if (currentSectionId) {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${currentSectionId}`) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
